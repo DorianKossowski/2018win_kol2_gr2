@@ -21,3 +21,48 @@
 #
 #Your program must be runnable with command "python task.py".
 #Show some usecases of your library in the code (print some things)
+
+def add_student(name, surname, stu_class):
+	names.append(name)
+	surnames.append(surname)
+	classes.append(stu_class)
+	grades.append([])
+
+def add_grade(name, surname, grade):
+	this_student = [index for index in range(len(names)) if names[index]==name]
+	for i in range(len(names)):
+		if surnames[i] == surname:
+			grades[i].append(grade)
+
+def print_students():
+	amount = len(names)
+	print('-----------------------------------------')
+	print('Amount of students: {}'.format(amount))	
+
+	for index in range(amount):
+		print ('Student: {} {} - class {}'.format(names[index], surnames[index], classes[index]))
+		print ('Grades: {}'.format(grades[index]))
+		if grades[index]:
+			average = float(sum(grades[index])) / (len(grades[index]))
+			print ('Average: {}'.format(average))
+		else:
+			print ('Average: None')
+
+
+
+if __name__ == "__main__":
+	names = []
+	surnames = []
+	classes = []
+	grades = []
+
+
+	add_student('imie', 'nazwisko', 'A')
+	add_student('drugie', 'nazwiskodrugie', 'B')
+
+	print_students()
+
+	add_grade('drugie', 'nazwiskodrugie', 5)
+	add_grade('drugie', 'nazwiskodrugie', 2)
+
+	print_students()
