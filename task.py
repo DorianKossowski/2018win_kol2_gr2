@@ -1,68 +1,127 @@
 # Class diary  
-#
-# Create program for handling lesson scores.
-# Use python to handle student (highscool) class scores, and attendance.
-# Make it possible to:
-# - Get students total average score (average across classes)
-# - get students average score in class
-# - hold students name and surname
-# - Count total attendance of student
-# The default interface for interaction should be python interpreter.
-# Please, use your imagination and create more functionalities. 
-# Your project should be able to handle entire school.
-# If you have enough courage and time, try storing (reading/writing) 
-# data in text files (YAML, JSON).
-# If you have even more courage, try implementing user interface.
-#If you can thing of any other features, you can add them.
-#Make intelligent use of pythons syntactic sugar (overloading, iterators, generators, etc)
-#Most of all: CREATE GOOD, RELIABLE, READABLE CODE.
-#The goal of this task is for you to SHOW YOUR BEST python programming skills.
-#Impress everyone with your skills, show off with your code.
-#
-#Your program must be runnable with command "python task.py".
-#Show some usecases of your library in the code (print some things)
 
-def add_student(name, surname, stu_class):
-	names.append(name)
-	surnames.append(surname)
-	classes.append(stu_class)
-	grades.append([])
+from random import randint
+from statistics import mean
+import json
 
-def add_grade(name, surname, grade):
-	this_student = [index for index in range(len(names)) if names[index]==name]
-	for i in range(len(names)):
-		if surnames[i] == surname:
-			grades[i].append(grade)
+def add_class(classes, new_class):
+	if new_class not in classes:
+		classes.update({new_class:[]})
 
-def print_students():
-	amount = len(names)
-	print('-----------------------------------------')
-	print('Amount of students: {}'.format(amount))	
-
-	for index in range(amount):
-		print ('Student: {} {} - class {}'.format(names[index], surnames[index], classes[index]))
-		print ('Grades: {}'.format(grades[index]))
-		if grades[index]:
-			average = float(sum(grades[index])) / (len(grades[index]))
-			print ('Average: {}'.format(average))
+def add_student(classes, student_class, name, surname):
+	if student_class not in classes:
+		print('Class {} does not exist.'.format(student_class))
+	else:
+		string = name + ' ' + surname
+		student_dict = {}
+		student_dict.update({string:{'scores':[],'attendance':[]}})
+		for s_dict in classes[student_class]:
+			if string in s_dict:
+				print('Student {} already in the class.'.format(string))
+				break
 		else:
-			print ('Average: None')
+			classes[student_class].append(student_dict)
+
+def print_students(classes, proper_class = 'All'):
+	if proper_class == 'All':
+		for class_name in classes:
+			print('Class {}:'.format(class_name))
+			for student_dict in classes[class_name]:
+				for student in student_dict:
+					print('\t{}: grades: {}, attendance: {}'.format(student, student_dict[student]['scores'], student_dict[student]['attendance'] ))
+	else:
+		if proper_class not in classes:
+			print('Class {} does not exist.'.format(proper_class))
+		else:
+			print('Class {}:'.format(proper_class))
+			for student_dict in classes[proper_class]:
+				for student in student_dict:
+					print('\t{}: grades: {}, attendance: {}'.format(student, student_dict[student]['scores'], student_dict[student]['attendance'] ))
+
+def be_present(classes, proper_class, name):
+	if proper_class not in classes:
+		print('Class {} does not exist.'.format(proper_class))
+	else:
+		for student_dict in classes[proper_class]:
+			if name in student_dict:
+				student_dict[name]['attendance'].append(True)
+				break
+		else:
+			print('Student {} does not exist in class {}.'.format(name, proper_class))
+
+def add_grade(classes, proper_class, name, grade):
+	if proper_class not in classes:
+		print('Class {} does not exist.'.format(proper_class))
+	else:
+		for student_dict in classes[proper_class]:
+			if name in student_dict:
+				student_dict[name]['scores'].append(grade)
+				break
+		else:
+			print('Student {} does not exist in class {}.'.format(name, proper_class))
+
+def stats_in_class(classes, proper_class):
+	if proper_class not in classes:
+		print('Class {} does not exist.'.format(proper_class))
+	else:
+		print('Statistics - class {}:'.format(proper_class))
+		scores = []
+		attendance = 0
+		for student_dict in classes[proper_class]:
+			for name in student_dict:
+				print('\t{}: average = {}, attendance = {}'.format(name, mean(student_dict[name]['scores']), len(student_dict[name]['attendance'])))
+				scores.extend(student_dict[name]['scores'])
+				attendance += len(student_dict[name]['attendance'])
+		print('\tAverage = {}, attendance = {}'.format(mean(scores), attendance))
+
+def stats_in_school(classes):
+	print('Statistics - school:')
+	scores = []
+	attendance = 0
+	for class_name in classes:
+		for student_dict in classes[class_name]:
+			for name in student_dict:
+				scores.extend(student_dict[name]['scores'])
+				attendance += len(student_dict[name]['attendance'])
+	print('\tAverage = {}, attendance = {}'.format(mean(scores), attendance))
 
 
+def file_json(classes, file_name, operation = 'load'):
+	if operation == 'save':
+		with open(file_name, 'w') as outfile:
+			json.dump(classes, outfile)
+			return None
+	else:
+		with open(file_name, 'r') as infile:
+			return json.load(infile)
 
 if __name__ == "__main__":
-	names = []
-	surnames = []
-	classes = []
-	grades = []
+
+	classes = {}
+
+	# classes = file_json(classes, 'classes.json')
+
+	add_class(classes, 'A')
+	add_class(classes, 'B')
+
+	add_student(classes, 'A', 'Eden', 'Hazard')
+	add_student(classes, 'A', 'Eden', 'Hazard')
+	add_student(classes, 'B', 'David', 'Luiz')
+	add_student(classes, 'A', 'Juan', 'Mata')
+	add_student(classes, 'C', 'Petr', 'Cech')
+
+	be_present(classes, 'B', 'David Luiz')
+	be_present(classes, 'A', 'Eden Hazard')
+
+	add_grade(classes, 'A', 'Juan Mata', randint(2,5))
+	add_grade(classes, 'A', 'Juan Mata', randint(2,5))
+	add_grade(classes, 'A', 'Eden Hazard', randint(2,5))
+	add_grade(classes, 'A', 'David Luiz', randint(2,5))
+	add_grade(classes, 'B', 'David Luiz', randint(2,5))
 
 
-	add_student('imie', 'nazwisko', 'A')
-	add_student('drugie', 'nazwiskodrugie', 'B')
+	print_students(classes)
+	stats_in_class(classes, 'A')
+	stats_in_school(classes)
 
-	print_students()
-
-	add_grade('drugie', 'nazwiskodrugie', 5)
-	add_grade('drugie', 'nazwiskodrugie', 2)
-
-	print_students()
+	file_json(classes, 'classes.json', 'save')
